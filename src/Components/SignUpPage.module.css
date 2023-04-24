@@ -1,0 +1,17 @@
+.Look {
+    margin: 200px auto;
+    width: 350px;
+    border: solid 2px black;
+    padding: 10px;
+    text-align: left;
+    background-color: aquamarine;
+  }
+  .Look h1 {
+
+    text-align: center;
+  }
+
+  .line{
+    display: flex;
+    justify-content: space-between;
+  }
