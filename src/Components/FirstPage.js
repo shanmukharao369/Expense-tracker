@@ -27,7 +27,7 @@ const FirstPageDetails = () => {
       <Container className="justify-content-center ">
         <Nav>
           {!authCtx.isLoggedIn && (
-            <>
+            <div>
               <NavLink to="/LoginPage" className={classes.login}>
                 Login
               </NavLink>
@@ -35,11 +35,11 @@ const FirstPageDetails = () => {
               <NavLink to="/SignupPage" className={classes.signup}>
                 SignUp
               </NavLink>
-            </>
+            </div>
           )}
           {authCtx.isLoggedIn && (
             <NavLink
-              to="/LoginPage"
+              to="/Home"
               className={classes.font}
               style={{ color: "Red" }}
               onClick={logout}
