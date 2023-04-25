@@ -2,7 +2,7 @@ import "./App.css";
 import SignUpPage from "./Components/SignUpPage";
 import LoginPage from "./Components/LoginPage";
 import AfterLogin from "./Components/AfterLogin";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch,Redirect } from "react-router-dom";
 import FirstPageDetails from "./Components/FirstPage";
 import CompleteProfile from "./Components/CompleteProfile";
 
@@ -22,6 +22,9 @@ function App() {
         </Route>
         <Route exact path="/completeProfile">
           <CompleteProfile />
+        </Route>
+        <Route exact path="/">
+          <Redirect to={"/LoginPage"} />
         </Route>
       </Switch>
     </Router>

@@ -1,16 +1,23 @@
-import React from "react";
+import React, { useContext } from "react";
 import classes from "./LoginPage.module.css";
 import { Button, Form, Nav } from "react-bootstrap";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Link, NavLink, useHistory } from "react-router-dom";
+import AuthContext from "../Store/AuthContext";
 
 const LoginPage = () => {
+  const authCtx = useContext(AuthContext);
+
   const history = useHistory();
   const emailInpurRef = useRef();
   const passwordInputRef = useRef();
 
+  const [login, setLogin] = useState(true);
+
   const submitHandler = (event) => {
     event.preventDefault();
+    setLogin(false);
+    authCtx.login();
 
     const enteredEmail = emailInpurRef.current.value;
     const enteredPassword = passwordInputRef.current.value;
@@ -31,22 +38,32 @@ const LoginPage = () => {
             "Content-Type": "application/json",
           },
         }
-      ).then((res) => {
-        if (res.ok) {
-          console.log("Login succesfullly");
-          alert("Login succesful");
+      )
+        .then((res) => {
+          if (res.ok) {
+            console.log("Login succesfullly");
+            alert("Login succesful");
+            history.replace("/WelcomePage");
+            return res.json();
+          } else {
+            return res.json().then((data) => {
+              // console.log(data);
+              let errorMessage = "Authrntication filed!";
+              if (data && data.error && data.error.message) {
+                errorMessage = data.error.message;
+              }
+              alert(errorMessage);
+            });
+          }
+        })
+        .then((data) => {
+          console.log(data);
+          authCtx.login(data.idToken, enteredEmail);
           history.replace("/WelcomePage");
-        } else {
-          return res.json().then((data) => {
-            // console.log(data);
-            let errorMessage = "Authrntication filed!";
-            if (data && data.error && data.error.message) {
-              errorMessage = data.error.message;
-            }
-            alert(errorMessage);
-          });
-        }
-      });
+        })
+        .catch((err) => {
+          alert(err.message);
+        });
     }
   };
 
@@ -68,10 +85,14 @@ const LoginPage = () => {
         </Form.Group>
 
         <div>
-          <Button variant="success pl-2" type="submit">
-            Sign in
-          </Button>
-          <Link style={{ color: "white", paddingLeft: "2rem" }}>
+          {login ? (
+            <Button variant="success pl-2" type="submit">
+              Login
+            </Button>
+          ) : (
+            <p style={{ color: "white" }}>Loading...</p>
+          )}
+          <Link to={"/"} style={{ color: "white", paddingLeft: "2rem" }}>
             forgot password?
           </Link>
         </div>
