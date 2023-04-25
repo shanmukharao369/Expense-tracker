@@ -2,9 +2,15 @@ import "./App.css";
 import SignUpPage from "./Components/SignUpPage";
 import LoginPage from "./Components/LoginPage";
 import AfterLogin from "./Components/AfterLogin";
-import { BrowserRouter as Router, Route, Switch,Redirect } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect,
+} from "react-router-dom";
 import FirstPageDetails from "./Components/FirstPage";
 import CompleteProfile from "./Components/CompleteProfile";
+import VerificationPage from "./Components/VerificationPage";
 
 function App() {
   return (
@@ -25,6 +31,9 @@ function App() {
         </Route>
         <Route exact path="/">
           <Redirect to={"/LoginPage"} />
+        </Route>
+        <Route exact path="/verify-email">
+          <VerificationPage />
         </Route>
       </Switch>
     </Router>

@@ -59,7 +59,7 @@ const LoginPage = () => {
         .then((data) => {
           console.log(data);
           authCtx.login(data.idToken, enteredEmail);
-          history.replace("/WelcomePage");
+          history.replace("/verify-email");
         })
         .catch((err) => {
           alert(err.message);
@@ -97,7 +97,7 @@ const LoginPage = () => {
           </Link>
         </div>
         <Nav>
-          <NavLink to={"/"} style={{ color: "white", paddingTop: "1rem" }}>
+          <NavLink to={"/SignupPage"} style={{ color: "white", paddingTop: "1rem" }}>
             Don't have an Account?
           </NavLink>
         </Nav>
