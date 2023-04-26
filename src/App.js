@@ -13,6 +13,7 @@ import { useContext } from "react";
 function App() {
 
   const authCtx = useContext(AuthContext);
+  console.log(authCtx.isLoggedIn, "inAppJs")
 
   return (
     <Router>
@@ -35,8 +36,7 @@ function App() {
         </Route>
         <Route exact path="/">
           {authCtx.isLoggedIn && <Redirect to={"/AddExpenseDetails"} />}
-          {!authCtx.isLoggedIn && <Redirect to={"/LoginPage"} />}
-        </Route>
+          </Route>
         <Route exact path="/verify-email">
           <VerificationPage />
         </Route>

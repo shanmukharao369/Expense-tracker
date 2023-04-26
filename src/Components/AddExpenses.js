@@ -9,35 +9,59 @@ const AddExpenseDetails = () => {
   const categoryRef = useRef();
   const [expenses, setExpenses] = useState([]);
 
-  useEffect(() => {
-    const emailStoredInLocalStorage = localStorage.getItem("email");
-    const userEmail = emailStoredInLocalStorage
-      ? emailStoredInLocalStorage.replace(/[^\w\s]/gi, "")
-      : "";
 
+  const [passExpenses, setPassExpenses] = useState([]);
+  const [isEdititng, setIsEditing] = useState(false);
+
+  const emailStoredInLocalStorage = localStorage.getItem("email");
+  const userEmail = emailStoredInLocalStorage
+    ? emailStoredInLocalStorage.replace(/[^\w\s]/gi, "")
+    : "";
+
+  const handleEditedUpdatation = () => {
+    const key = localStorage.getItem("keyToEdit");
+
+    const editedExpense = {
+      amount: amountRef.current.value,
+      description: descriptionRef.current.value,
+      category: categoryRef.current.value,
+    };
+    axios
+      .post(
+        `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${userEmail}.json`,
+        editedExpense
+      )
+      .then((response) => {
+        console.log(response.data);
+        setExpenses([...expenses, editedExpense]);
+        setIsEditing(false);
+      })
+      .catch((error) => {
+        console.log("Error updating todo:", error);
+      });
+    amountRef.current.value = "";
+    descriptionRef.current.value = "";
+    categoryRef.current.value = "";
+  };
+
+  useEffect(() => {
     axios
       .get(
-        `https://expense-signup-4cff2-default-rtdb.firebaseio.com///${userEmail}.json`
+        `https://expense-signup-4cff2-default-rtdb.firebaseio.com/${userEmail}.json`
       )
       .then((response) => {
         if (response.data) {
-          setExpenses(Object.values(response.data));
+            setPassExpenses(response.data);
         }
       })
       .catch((error) => {
         console.log(error);
       });
-  }, []);
   console.log(expenses);
-
+}, [expenses]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-
-    const emailStoredInLocalStorage = localStorage.getItem("email");
-    const userEmail = emailStoredInLocalStorage
-      ? emailStoredInLocalStorage.replace(/[^\w\s]/gi, "")
-      : "";
 
     const expenseList = {
       amount: amountRef.current.value,
@@ -45,27 +69,65 @@ const AddExpenseDetails = () => {
       category: categoryRef.current.value,
     };
 
-    if (userEmail) {
-        axios
-          .post(
-            `https://expense-signup-4cff2-default-rtdb.firebaseio.com///${userEmail}.json`,
-            expenseList
-          )
-          .then((response) => {
-            console.log(response);
-            setExpenses([...expenses, expenseList]);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      }
+    axios
+      .post(
+        `https://expense-signup-4cff2-default-rtdb.firebaseio.com/${userEmail}.json`,
+        expenseList
+      )
+      .then((response) => {
+        console.log(response);
+        setExpenses([...expenses, expenseList]);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
 
-    console.log(expenseList);
+    console.log(userEmail,"inside submitHandler");
 
     amountRef.current.value = "";
     descriptionRef.current.value = "";
     categoryRef.current.value = "";
   };
+
+const handleDelete = (key) => {
+  axios
+    .delete(
+      `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${userEmail}/${key}.json`
+    )
+    .then((response) => {
+      console.log("Expense successfully deleted");
+      // Remove expense from passExpenses state
+      const updatedExpenses = { ...passExpenses };
+      delete updatedExpenses[key];
+      setPassExpenses(updatedExpenses);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+    console.log(userEmail,"inside submitHandler");
+};
+
+const handleEdit = (key) => {
+  localStorage.setItem("keyToEdit", key);
+  setIsEditing(true);
+  axios
+    .get(
+      `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${userEmail}/${key}.json`
+    )
+    .then((response) => {
+
+      amountRef.current.value = response.data.amount;
+      descriptionRef.current.value = response.data.description;
+      categoryRef.current.value = response.data.category;
+      handleDelete(key);
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+
+};
+
 
   return (
     <div>
@@ -93,16 +155,27 @@ const AddExpenseDetails = () => {
           <Form.Group controlId="category">
             <Form.Label>Category:</Form.Label>
             <Form.Select as="select" ref={categoryRef} required>
-              <option value="Food">--Choose Category--</option>
+              <option value="">--Choose Category--</option>
               <option value="Food">Food</option>
               <option value="Petrol">Petrol</option>
               <option value="Salary">Salary</option>
             </Form.Select>
           </Form.Group>
           <div className="text-center">
+          {!isEdititng && (
             <Button variant="primary" type="submit" className="mt-3">
               Add Expense
             </Button>
+          )}
+          {isEdititng && (
+            <Button
+              variant="info"
+              className="mt-3"
+              onClick={handleEditedUpdatation}
+            >
+              Update Expense
+            </Button>
+          )}
           </div>{" "}
         </Form>{" "}
       </div>
@@ -110,17 +183,29 @@ const AddExpenseDetails = () => {
       <Table striped bordered hover variant="light" className="container">
         <thead>
           <tr>
+            <th>S.No</th>
             <th>Amount</th>
             <th>Description</th>
             <th>Category</th>
+            <th>Modifications</th>
           </tr>
         </thead>
         <tbody>
-          {expenses.map((expense, index) => (
-            <tr key={index}>
-              <td>{expense.amount}</td>
-              <td>{expense.description}</td>
-              <td>{expense.category}</td>
+        {Object.keys(passExpenses).map((key, index) => (
+            <tr key={key}>
+              <td>{index + 1}</td>
+              <td>{passExpenses[key].amount}</td>
+              <td>{passExpenses[key].description}</td>
+              <td>{passExpenses[key].category}</td>
+
+              <td>
+                <Button className="m-3" onClick={() => handleEdit(key)}>
+                  Edit
+                </Button>
+                <Button variant="danger" onClick={() => handleDelete(key)}>
+                  Delete
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>
