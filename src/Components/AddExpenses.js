@@ -1,6 +1,7 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Form, Button, Table } from "react-bootstrap";
 import classes from "./AddExpenses.module.css";
+import axios from "axios";
 
 const AddExpenseDetails = () => {
   const amountRef = useRef();
@@ -8,8 +9,35 @@ const AddExpenseDetails = () => {
   const categoryRef = useRef();
   const [expenses, setExpenses] = useState([]);
 
+  useEffect(() => {
+    const emailStoredInLocalStorage = localStorage.getItem("email");
+    const userEmail = emailStoredInLocalStorage
+      ? emailStoredInLocalStorage.replace(/[^\w\s]/gi, "")
+      : "";
+
+    axios
+      .get(
+        `https://expense-signup-4cff2-default-rtdb.firebaseio.com///${userEmail}.json`
+      )
+      .then((response) => {
+        if (response.data) {
+          setExpenses(Object.values(response.data));
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+  console.log(expenses);
+
+
   const handleSubmit = (event) => {
     event.preventDefault();
+
+    const emailStoredInLocalStorage = localStorage.getItem("email");
+    const userEmail = emailStoredInLocalStorage
+      ? emailStoredInLocalStorage.replace(/[^\w\s]/gi, "")
+      : "";
 
     const expenseList = {
       amount: amountRef.current.value,
@@ -17,7 +45,20 @@ const AddExpenseDetails = () => {
       category: categoryRef.current.value,
     };
 
-    setExpenses([...expenses, expenseList]);
+    if (userEmail) {
+        axios
+          .post(
+            `https://expense-signup-4cff2-default-rtdb.firebaseio.com///${userEmail}.json`,
+            expenseList
+          )
+          .then((response) => {
+            console.log(response);
+            setExpenses([...expenses, expenseList]);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
 
     console.log(expenseList);
 
@@ -65,7 +106,7 @@ const AddExpenseDetails = () => {
           </div>{" "}
         </Form>{" "}
       </div>
-      <h3 className="text-center mt-5 text-white">Expenses</h3>
+      <h3 className="text-center mt-1 text-white">Expenses</h3>
       <Table striped bordered hover variant="light" className="container">
         <thead>
           <tr>
