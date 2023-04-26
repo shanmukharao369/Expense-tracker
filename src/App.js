@@ -11,6 +11,7 @@ import {
 import FirstPageDetails from "./Components/FirstPage";
 import CompleteProfile from "./Components/CompleteProfile";
 import VerificationPage from "./Components/VerificationPage";
+import AddExpenseDetails from "./Components/AddExpenses";
 
 function App() {
   return (
@@ -34,6 +35,9 @@ function App() {
         </Route>
         <Route exact path="/verify-email">
           <VerificationPage />
+        </Route>
+        <Route exact path="/AddExpenseDetails">
+          <AddExpenseDetails />
         </Route>
       </Switch>
     </Router>
