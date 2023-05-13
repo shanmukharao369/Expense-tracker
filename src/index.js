@@ -11,14 +11,19 @@ import "../node_modules/bootstrap/dist/css/bootstrap.css";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const DarkOrNot = localStorage.getItem("dark or not") === "true";
+console.log(DarkOrNot);
+
 root.render(
-  <Provider store={store} >
-    <AuthContextProvider>
-      <BrowserRouter> 
-        <App/>
-      </BrowserRouter>
-    </AuthContextProvider>
-  </Provider>
+  <div className={DarkOrNot ? "dark" : null}>
+    <Provider store={store} >
+      <AuthContextProvider>
+        <BrowserRouter> 
+          <App/>
+        </BrowserRouter>
+      </AuthContextProvider>
+    </Provider>
+  </div>
 );
 
 // If you want to start measuring performance in your app, pass a function
