@@ -2,8 +2,12 @@ import React, { useRef, useState, useEffect } from "react";
 import { Form, Button, Table } from "react-bootstrap";
 import classes from "./AddExpenses.module.css";
 import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
+import { expenseActions } from "../Store/expenseSlice";
 
 const AddExpenseDetails = () => {
+  const dispatch = useDispatch();
+  let totalAmount = 0;
   const amountRef = useRef();
   const descriptionRef = useRef();
   const categoryRef = useRef();
@@ -13,10 +17,9 @@ const AddExpenseDetails = () => {
   const [passExpenses, setPassExpenses] = useState([]);
   const [isEdititng, setIsEditing] = useState(false);
 
-  const emailStoredInLocalStorage = localStorage.getItem("email");
-  const userEmail = emailStoredInLocalStorage
-    ? emailStoredInLocalStorage.replace(/[^\w\s]/gi, "")
-    : "";
+  const LoggedInEmail = useSelector((state) => state.auth.userEmail);
+  console.log(LoggedInEmail,"loggedInEmail")
+  const UserEmail = LoggedInEmail.replace(/[@.]/g, "");
 
   const handleEditedUpdatation = () => {
     const key = localStorage.getItem("keyToEdit");
@@ -28,7 +31,7 @@ const AddExpenseDetails = () => {
     };
     axios
       .post(
-        `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${userEmail}.json`,
+        `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${UserEmail}.json`,
         editedExpense
       )
       .then((response) => {
@@ -44,21 +47,6 @@ const AddExpenseDetails = () => {
     categoryRef.current.value = "";
   };
 
-  useEffect(() => {
-    axios
-      .get(
-        `https://expense-signup-4cff2-default-rtdb.firebaseio.com/${userEmail}.json`
-      )
-      .then((response) => {
-        if (response.data) {
-            setPassExpenses(response.data);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  console.log(expenses);
-}, [expenses]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -71,7 +59,7 @@ const AddExpenseDetails = () => {
 
     axios
       .post(
-        `https://expense-signup-4cff2-default-rtdb.firebaseio.com/${userEmail}.json`,
+        `https://expense-signup-4cff2-default-rtdb.firebaseio.com/${UserEmail}.json`,
         expenseList
       )
       .then((response) => {
@@ -82,7 +70,7 @@ const AddExpenseDetails = () => {
         console.log(error);
       });
 
-    console.log(userEmail,"inside submitHandler");
+    console.log(UserEmail,"inside submitHandler");
 
     amountRef.current.value = "";
     descriptionRef.current.value = "";
@@ -92,7 +80,7 @@ const AddExpenseDetails = () => {
 const handleDelete = (key) => {
   axios
     .delete(
-      `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${userEmail}/${key}.json`
+      `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${UserEmail}/${key}.json`
     )
     .then((response) => {
       console.log("Expense successfully deleted");
@@ -104,8 +92,6 @@ const handleDelete = (key) => {
     .catch((error) => {
       console.log(error);
     });
-
-    console.log(userEmail,"inside submitHandler");
 };
 
 const handleEdit = (key) => {
@@ -113,7 +99,7 @@ const handleEdit = (key) => {
   setIsEditing(true);
   axios
     .get(
-      `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${userEmail}/${key}.json`
+      `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${UserEmail}/${key}.json`
     )
     .then((response) => {
 
@@ -127,6 +113,33 @@ const handleEdit = (key) => {
     });
 
 };
+
+useEffect(() => {
+  axios
+    .get(
+      `https://expense-signup-4cff2-default-rtdb.firebaseio.com//${UserEmail}.json`
+    )
+    .then((response) => {
+      if (response.data) {
+        setPassExpenses(response.data);
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+}, [expenses]);
+
+{
+  Object.keys(passExpenses).forEach((key) => {
+    totalAmount += +passExpenses[key].amount;
+  });
+}
+
+if (totalAmount > 10000) {
+  dispatch(expenseActions.Premium());
+} else {
+  dispatch(expenseActions.notPremium());
+}
 
 
   return (
@@ -209,7 +222,8 @@ const handleEdit = (key) => {
             </tr>
           ))}
         </tbody>
-      </Table>
+        </Table>{""}
+        <h1 className="text-white">Total amount: {totalAmount}.00</h1>
     </div>
   );
 };

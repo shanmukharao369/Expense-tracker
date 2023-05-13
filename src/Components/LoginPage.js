@@ -1,11 +1,14 @@
-import React, { useContext } from "react";
+import React, { useContext, useState, useRef } from "react";
 import classes from "./LoginPage.module.css";
 import { Button, Form, Nav } from "react-bootstrap";
-import { useRef, useState } from "react";
+
 import { NavLink, useHistory } from "react-router-dom";
 import AuthContext from "../Store/AuthContext";
+import { useDispatch } from "react-redux";
+import { authActions } from "../Store/authSlice";
 
 const LoginPage = () => {
+  const dispatch = useDispatch();
   const authCtx = useContext(AuthContext);
 
   const history = useHistory();
@@ -13,6 +16,7 @@ const LoginPage = () => {
   const passwordInputRef = useRef();
 
   const [login, setLogin] = useState(false);
+
   const ForgotPasswordHandler = () => {
     alert("you may have received an email with reset link");
     console.log(emailInputRef.current.value);
@@ -98,7 +102,9 @@ const LoginPage = () => {
         })
         .then((data) => {
           console.log(data);
-          authCtx.login(data.idToken, enteredEmail);
+          dispatch(
+            authActions.login({ token: data.idToken, email: data.email })
+          );
           history.replace("/AddExpenseDetails");
         })
         .catch((err) => {
